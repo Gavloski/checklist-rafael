@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Demandas Rafael Gavloski</title>
+<style>
+    body {
+        background-color: white;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        color: #333;
+    }
+    h1 {
+        color: #d32f2f;
+        text-align: center;
+    }
+    .frase {
+        text-align: center;
+        font-style: italic;
+        margin-bottom: 20px;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+    th, td {
+        border: 1px solid #d32f2f;
+        padding: 8px;
+        text-align: center;
+    }
+    th {
+        background-color: #d32f2f;
+        color: white;
+    }
+    .btn {
+        background-color: #d32f2f;
+        color: white;
+        border: none;
+        padding: 6px 10px;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+    .btn:hover {
+        background-color: #a52828;
+    }
+    .dashboard {
+        border: 2px solid #d32f2f;
+        padding: 10px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    .dashboard h3 {
+        color: #d32f2f;
+        margin-top: 0;
+    }
+</style>
+</head>
+<body>
+
+<h1>Demandas Rafael Gavloski</h1>
+<p class="frase">Nada comparado à felicidade que você me oferece. Te adoro, Rafael.</p>
+
+<div class="dashboard">
+    <h3>Dashboard Semanal</h3>
+    <p>Total de Tarefas: <span id="total">0</span></p>
+    <p>Concluídas: <span id="concluidas">0</span></p>
+    <p>Pendentes: <span id="pendentes">0</span></p>
+    <p>Atrasadas: <span id="atrasadas">0</span></p>
+</div>
+
+<form id="form">
+    <input type="text" id="tarefa" placeholder="Tarefa" required>
+    <input type="text" id="descricao" placeholder="Descrição">
+    <input type="datetime-local" id="inicio" required>
+    <select id="status">
+        <option>Pendente</option>
+        <option>Concluído</option>
+        <option>Atrasado</option>
+    </select>
+    <select id="prioridade">
+        <option>Alta</option>
+        <option>Média</option>
+        <option>Baixa</option>
+    </select>
+    <input type="text" id="comentarios" placeholder="Comentários">
+    <button class="btn" type="submit">Adicionar</button>
+</form>
+
+<table>
+    <thead>
+        <tr>
+            <th>Tarefa</th>
+            <th>Descrição</th>
+            <th>Início</th>
+            <th>Data Limite</th>
+            <th>Status</th>
+            <th>Prioridade</th>
+            <th>Comentários</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody id="tabela"></tbody>
+</table>
+
+<script>
+let tarefas = JSON.parse(localStorage.getItem('tarefas')) || [];
+
+function salvar() {
+    localStorage.setItem('tarefas', JSON.stringify(tarefas));
+}
+
+function atualizarDashboard() {
+    document.getElementById('total').innerText = tarefas.length;
+    document.getElementById('concluidas').innerText = tarefas.filter(t => t.status === 'Concluído').length;
+    document.getElementById('pendentes').innerText = tarefas.filter(t => t.status === 'Pendente').length;
+    document.getElementById('atrasadas').innerText = tarefas.filter(t => t.status === 'Atrasado').length;
+}
+
+function renderizar() {
+    const tabela = document.getElementById('tabela');
+    tabela.innerHTML = '';
+    tarefas.forEach((t, index) => {
+        const tr = document.createElement('tr');
+        const dataLimite = new Date(new Date(t.inicio).getTime() + 8 * 60 * 60 * 1000)
+                            .toLocaleString('pt-BR').replace(',', '');
+        tr.innerHTML = `
+            <td>${t.tarefa}</td>
+            <td>${t.descricao}</td>
+            <td>${new Date(t.inicio).toLocaleString('pt-BR').replace(',', '')}</td>
+            <td>${dataLimite}</td>
+            <td>${t.status}</td>
+            <td>${t.prioridade}</td>
+            <td>${t.comentarios}</td>
+            <td>
+                <button class="btn" onclick="editar(${index})">Editar</button>
+                <button class="btn" onclick="excluir(${index})">Excluir</button>
+            </td>
+        `;
+        tabela.appendChild(tr);
+    });
+    atualizarDashboard();
+}
+
+document.getElementById('form').addEventListener('submit', e => {
+    e.preventDefault();
+    const tarefa = {
+        tarefa: document.getElementById('tarefa').value,
+        descricao: document.getElementById('descricao').value,
+        inicio: document.getElementById('inicio').value,
+        status: document.getElementById('status').value,
+        prioridade: document.getElementById('prioridade').value,
+        comentarios: document.getElementById('comentarios').value
+    };
+    tarefas.push(tarefa);
+    salvar();
+    renderizar();
+    e.target.reset();
+});
+
+function excluir(index) {
+    if(confirm('Deseja realmente excluir esta tarefa?')) {
+        tarefas.splice(index, 1);
+        salvar();
+        renderizar();
+    }
+}
+
+function editar(index) {
+    const t = tarefas[index];
+    document.getElementById('tarefa').value = t.tarefa;
+    document.getElementById('descricao').value = t.descricao;
+    document.getElementById('inicio').value = t.inicio;
+    document.getElementById('status').value = t.status;
+    document.getElementById('prioridade').value = t.prioridade;
+    document.getElementById('comentarios').value = t.comentarios;
+    excluir(index);
+}
+
+renderizar();
+</script>
+
+</body>
+</html>
