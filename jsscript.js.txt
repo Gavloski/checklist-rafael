@@ -1,0 +1,101 @@
+const username = 'Logisticamm';
+const password = 'logistica123456';
+
+function login() {
+    const userInput = document.getElementById('username').value;
+    const passInput = document.getElementById('password').value;
+    if (userInput === username && passInput === password) {
+        document.getElementById('login-section').style.display = 'none';
+        document.getElementById('app-section').style.display = 'block';
+    } else {
+        alert('Usuário ou senha incorretos');
+    }
+}
+
+function addItem() {
+    const nome = document.getElementById('nome').value;
+    const setor = document.getElementById('setor').value;
+    const matricula = document.getElementById('matricula').value;
+    const descricao = document.getElementById('descricao').value;
+    const tamanho = document.getElementById('tamanho').value;
+    const quantidade = document.getElementById('quantidade').value;
+    const data = document.getElementById('data').value;
+
+    if (!nome || !setor || !matricula || !descricao || !tamanho || !quantidade || !data) {
+        alert('Preencha todos os campos');
+        return;
+    }
+
+    const table = document.querySelector('#solicitacoes tbody');
+    const row = table.insertRow();
+
+    row.insertCell(0).innerText = nome;
+    row.insertCell(1).innerText = setor;
+    row.insertCell(2).innerText = matricula;
+    row.insertCell(3).innerText = descricao;
+    row.insertCell(4).innerText = tamanho;
+    row.insertCell(5).innerText = quantidade;
+    row.insertCell(6).innerText = data;
+    const actions = row.insertCell(7);
+    actions.innerHTML = '<button onclick="editRow(this)">Editar</button> <button onclick="deleteRow(this)">Excluir</button>';
+
+    clearForm();
+}
+
+function clearForm() {
+    document.getElementById('nome').value = '';
+    document.getElementById('setor').value = '';
+    document.getElementById('matricula').value = '';
+    document.getElementById('descricao').value = '';
+    document.getElementById('tamanho').value = '';
+    document.getElementById('quantidade').value = '';
+    document.getElementById('data').value = '';
+}
+
+function deleteRow(btn) {
+    const row = btn.parentNode.parentNode;
+    row.remove();
+}
+
+function editRow(btn) {
+    const row = btn.parentNode.parentNode;
+    const cells = row.querySelectorAll('td');
+    document.getElementById('nome').value = cells[0].innerText;
+    document.getElementById('setor').value = cells[1].innerText;
+    document.getElementById('matricula').value = cells[2].innerText;
+    document.getElementById('descricao').value = cells[3].innerText;
+    document.getElementById('tamanho').value = cells[4].innerText;
+    document.getElementById('quantidade').value = cells[5].innerText;
+    document.getElementById('data').value = cells[6].innerText;
+    row.remove();
+}
+
+function searchTable() {
+    const input = document.getElementById('search').value.toLowerCase();
+    const rows = document.querySelectorAll('#solicitacoes tbody tr');
+    rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(input) ? '' : 'none';
+    });
+}
+
+function exportTableCSV() {
+    let data = '';
+    const rows = document.querySelectorAll('table tr');
+    rows.forEach(row => {
+        const cols = row.querySelectorAll('td, th');
+        const rowData = Array.from(cols).map(col => '"' + col.innerText + '"').join(',');
+        data += rowData + '\n';
+    });
+    const blob = new Blob([data], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'solicitacoes.csv';
+    link.click();
+}
+
+function exportToExcel() {
+    const table = document.getElementById('solicitacoes');
+    const wb = XLSX.utils.table_to_book(table, { sheet: "Solicitações" });
+    XLSX.writeFile(wb, 'solicitacoes.xlsx');
+}
